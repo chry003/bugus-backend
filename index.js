@@ -23,9 +23,48 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.post('/api/login', (req, res) => {
-	login(req.body.username, req.body.password);
-})
+	firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.password)
+	  .then((userCredential) => {
+	    // Signed in 
+	    var user = userCredential.user;
+	    res.status(200).send(user);
+	    // ...
+	  })
+	  .catch((error) => {
+	    var errorCode = error.code;
+	    var errorMessage = error.message;
 
+	    res.status(400).send(
+	    	{
+	    		"code": errorCode,
+	    		"message": errorMessage
+	    	}
+	    )
+	    // ..
+	  });
+});
+
+
+app.post('/api/signup', (req, res) => {
+	firebase.auth().signInWithEmailAndPassword(req.body.email, req.body.password)
+	  .then((userCredential) => {
+	    // Signed in
+	    var user = userCredential.user;
+	    res.status(200).send(user);
+	    // ...
+	  })
+	  .catch((error) => {
+	    var errorCode = error.code;
+	    var errorMessage = error.message;
+
+	    res.status(400).send(
+	    	{
+	    		"code": errorCode,
+	    		"message": errorMessage
+	    	}
+	    )
+	  });
+})
 
 io.on('connection', (socket) => {
 	// handle user method here
@@ -35,15 +74,3 @@ io.on('connection', (socket) => {
 http.listen(3000, function() {
    console.log('listening on *:3000');
 });
-
-
-const login = (email, password) => {
-	firebase.auth().createUserWithEmailAndPassword(email, password)
-		.then((userCredential) => {
-			console.log(userCredential);
-		})
-
-		.catch((err) => {
-			console.log(err);
-		})
-}
